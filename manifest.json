@@ -1,0 +1,15 @@
+{
+  "name": "Jarvis",
+  "short_name": "Jarvis",
+  "start_url": "/index.html",
+  "theme_color": "#fff",
+  "background_color": "#fff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "A simply PWA Application for Jarvis.",
+  "icons": [{
+    "src": "icon/jarvis.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }]
+}

@@ -1,5 +1,5 @@
-# pwa-practice
-This is good time to practice PWA
+# pwa-jarvis
+This is good time to practice PWA, So I apply it into Jarvis a information assistant
 
 ## RoadMap
 - [ ] H5 static site show some images
