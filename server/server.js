@@ -28,7 +28,9 @@ if (__DEV__) {
     stats: config.compiler.stats
   }))
   // webpack-hot-middleware
-  app.use(webpackHotMiddleware(compiler))
+  app.use(webpackHotMiddleware(compiler, {
+    path: '/__webpack_hmr'
+  }))
 } else {
   debug(
     'Webpack dev Server must live of development mode,' +
