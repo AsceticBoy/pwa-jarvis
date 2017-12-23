@@ -1,7 +1,8 @@
 'use strict'
 
 var path = require('path')
-var packageJson = require('package.json')
+var packageJson = require('../package.json')
+var debug = require('debug')('app:global:config')
 
 // environment difference to difference config
 const environment = {
@@ -14,7 +15,14 @@ const environment = {
   }),
   production: (config) => ({
     compiler: {
-      ...config.compiler
+      ...config.compiler,
+      'devtool': false,
+      'stats': {
+        chunks: true,
+        chunkModules: true,
+        colors : true,
+        warnings: true,
+      }
     }
   })
 }
@@ -47,7 +55,14 @@ config.compiler = {
     'redux'
   ],
   'public_path': '/',
-  'hash': 'hash:8'
+  'hash': 'hash:8',
+  'allow_warning': true,
+  'stats': {
+    chunks: false,
+    chunkModules: false,
+    colors : true,
+    warnings: true,
+  }
 }
 
 // filter vendors

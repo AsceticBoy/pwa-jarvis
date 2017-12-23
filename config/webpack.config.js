@@ -25,13 +25,11 @@ const webpackConfig = {
   resolve: {
     extensions: ['.js', '.json'],
     descriptionFiles: ['package.json']
-  }
+  },
+  devtool: config.compiler.devtool,
+  module: {}
 }
 
-// >>>>> devtool
-if (__DEV__) {
-  webpackConfig.devtool = config.compiler.devtool
-}
 // >>>>> entry
 const entry = {
   polyfill: ['babel-polyfill'],
@@ -150,13 +148,13 @@ webpackConfig.plugins = [
     inject   : true
   }),
   new CopyPlugin([{
-    form: config.paths.rootTo('service-worker.js'),
+    from: config.paths.rootTo('service-worker.js'),
     to: config.paths.web('service-worker.js')
   }, {
-    form: config.paths.rootTo('manifest.json'),
+    from: config.paths.rootTo('manifest.json'),
     to: config.paths.web('manifest.json')
   }, {
-    form: config.paths.assets('icon'),
+    from: config.paths.assets('icon'),
     to: config.paths.web('icon')
   }])
 ]
@@ -201,6 +199,5 @@ if (__PROD__) {
     })
   )
 }
-
 
 module.exports = webpackConfig
