@@ -22,11 +22,6 @@ debug('Webpack configuration init')
 // >>>>> webpack
 const webpackConfig = {
   target: 'web',
-  entry: {
-    polyfill: ['babel-polyfill'],
-    vendors: config.compiler.vendors,
-    app: [config.paths.src('app.js')] // must be array
-  },
   resolve: {
     extensions: ['.js', '.json'],
     descriptionFiles: ['package.json']
@@ -34,6 +29,16 @@ const webpackConfig = {
   devtool: config.compiler.devtool,
   module: {}
 }
+
+// >>>>> entry
+const entry = {
+  polyfill: ['babel-polyfill'],
+  vendors: config.compiler.vendors,
+  app: [config.paths.src('app.js')] // must be array
+}
+webpackConfig.entry = __DEV__
+  ? Object.assign({}, entry, { app: entry.app.concat(config.paths.config('client.js')) })
+  : Object.assign({}, entry)
 
 // >>>>> output(由于PWA的特殊性，后期考虑在这个位置做应用架构外壳，从而实现缓存)
 webpackConfig.output = {
@@ -160,7 +165,7 @@ if (__DEV__) {
     new webpack.NoEmitOnErrorsPlugin(), // 编译错误时跳出输出阶段
     new webpack.HotModuleReplacementPlugin(), // webpack模块热替换
     new OpenBrowserPlugin({
-      url: config.compiler.public_path,
+      url: 'httP://localhost:' + config.port,
     })
   )
 } else if (__PROD__) {

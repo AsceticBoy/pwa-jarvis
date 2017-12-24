@@ -9,7 +9,6 @@ const environment = {
   development: (config) => ({
     compiler: {
       ...config.compiler,
-      'public_path': `http://localhost:${config.port}`,
       'hash': false
     }
   }),
@@ -39,6 +38,7 @@ const config = {
   'shortname_src'    : 'src',
   'shortname_assets' : 'assets',
   'shortname_web' : 'web',
+  'shortname_config' : 'config'
 }
 
 config.compiler = {
@@ -90,7 +90,8 @@ config.paths = {
   'rootTo' : attach,
   'src' : attach.bind(null, config.shortname_src),
   'assets' : attach.bind(null, config.shortname_assets),
-  'web' : attach.bind(null, config.shortname_web)
+  'web' : attach.bind(null, config.shortname_web),
+  'config': attach.bind(null, config.shortname_config)
 }
 // change config into difference environment
 const cover = environment[config.env]
