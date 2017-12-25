@@ -25,11 +25,11 @@ function createServer() {
     // webpack-dev-middleware
     const devModules = webpackDevMiddleware(compiler, {
       publicPath: webpackConfig.output.publicPath,
+      historyApiFallback: true,
       lazy: false, // 非只有请求才更新
-      hot: false, // 不开启，用module.hot.accept()来优化
+      hot: true, // 开启，用module.hot.accept()来优化
       stats: config.compiler.stats
     })
-    debug('hhh', webpackConfig.output.publicPath)
     // webpack-hot-middleware
     const hotModules = webpackHotMiddleware(compiler, {
       path: '/__webpack_hmr', // 匹配客户端设置

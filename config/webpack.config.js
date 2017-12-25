@@ -34,10 +34,11 @@ const webpackConfig = {
 const entry = {
   polyfill: ['babel-polyfill'],
   vendors: config.compiler.vendors,
-  app: [config.paths.src('app.js')] // must be array
+  app: config.paths.src('app.js') // must be array
 }
+// Warning: "react-hot-loader/patch" did not run immediately before the app started. Make sure that it runs before any other code
 webpackConfig.entry = __DEV__
-  ? Object.assign({}, entry, { app: entry.app.concat(config.paths.config('client.js')) })
+  ? Object.assign({}, entry, { app: ['react-hot-loader/patch', config.paths.config('client.js'), 'webpack/hot/only-dev-server'].concat(config.paths.src('app.js')) })
   : Object.assign({}, entry)
 
 // >>>>> output(由于PWA的特殊性，后期考虑在这个位置做应用架构外壳，从而实现缓存)
@@ -162,8 +163,9 @@ webpackConfig.plugins = [
 if (__DEV__) {
   debug('Development plugins add')
   webpackConfig.plugins.push(
-    new webpack.NoEmitOnErrorsPlugin(), // 编译错误时跳出输出阶段
     new webpack.HotModuleReplacementPlugin(), // webpack模块热替换
+    new webpack.NamedModulesPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(), // 编译错误时跳出输出阶段
     new OpenBrowserPlugin({
       url: 'httP://localhost:' + config.port,
     })

@@ -46,7 +46,7 @@ config.compiler = {
   'babel': {
     cacheDirectory: true,
     presets: ['env', 'react', 'stage-0'],
-    plugins: ['transform-runtime']
+    plugins: ['transform-runtime', 'react-hot-loader/babel']
   },
   'vendors': [
     'react',
