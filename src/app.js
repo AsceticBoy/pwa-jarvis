@@ -4,11 +4,16 @@ import { AppContainer } from 'react-hot-loader'
 import Redbox from 'redbox-react'
 import App from './container'
 
+const __APP_SUPPORT__ = {
+  __SW_PROVIDE__: 'serviceWorker' in window.navigator,
+  __NOTIFY_PROVIDE__: 'Notification' in window
+}
+
 const ROOT = document.getElementById('root')
 
 const render = (Component) => {
   ReactDOM.render(
-    <Component />,
+    <Component appSupport={__APP_SUPPORT__}/>,
     ROOT
   )
 }
@@ -16,7 +21,7 @@ const render = (Component) => {
 const __DEV__Render = (Component) => {
   ReactDOM.render(
     <AppContainer errorReporter={Redbox}>
-      <Component />
+      <Component appSupport={__APP_SUPPORT__}/>
     </AppContainer>,
     ROOT
   )
