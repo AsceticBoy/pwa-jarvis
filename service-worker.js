@@ -1,6 +1,5 @@
 
 // service-worker.js record the liftcycle event focus
-importScripts('./src/tools/request.js')
 
 // global service-worker config
 let _CACHE_VERSION = 1
@@ -22,8 +21,23 @@ self.addEventListener('install', function (event) {
         console.info('cache open', _CACHE_INFO.prefetch.name)
         let allCachePromise = _CACHE_INFO.prefetch.uri.map(cacheUri => {
           let reqUrl = new URL(cacheUri, location.href)
-          return appFetch(reqUrl)
-            .then()
+          let request = new Request(reqUrl)
+          return fetch(request)
+            .then(function (response) {
+              if (response.status >= 400) {
+                throw new Error(
+                  'request for' + requrl + 'failed with status' + response.statusText
+                )
+              }
+              return cache.put(cacheUri, response)
+            })
+            .catch(function (error) {
+              console.error('fetch error with url' + reqUrl + 'occur' + error)
+            })
+
+          Promise.all(allCachePromise).then(function () {
+            console.info('all prefetch file cache completed.')
+          })
         })
       })
       .catch(error => console.error('predetch cache error', error))
