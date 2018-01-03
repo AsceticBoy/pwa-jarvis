@@ -71,7 +71,7 @@ webpackConfig.module.rules.push({
       limit: 8192
     }
   },
-  include: config.paths.assets()
+  include: [config.paths.assets()]
 },{
   test: /\.(mp3|mp4|wav)$/,
   use: {
@@ -80,7 +80,7 @@ webpackConfig.module.rules.push({
       name: `audio/[name]${config.compiler.hash ? `_[${config.compiler.hash}]` : ''}.[ext]`,
     },
   },
-  include: config.paths.assets()
+  include: [config.paths.assets()]
 }, {
   test: /\.(woff|woff2|eot|svg|ttf|otf)$/,
   use: {
@@ -89,7 +89,7 @@ webpackConfig.module.rules.push({
       name: `font/name]${config.compiler.hash ? `_[${config.compiler.hash}]` : ''}.[ext]`,
     },
   },
-  include: config.paths.assets()
+  include: [config.paths.assets()]
 })
 // styles
 webpackConfig.module.rules.push({
@@ -155,8 +155,8 @@ webpackConfig.plugins = [
     from: config.paths.rootTo('manifest.json'),
     to: config.paths.web('manifest.json')
   }, {
-    from: config.paths.assets('icon'),
-    to: config.paths.web('icon')
+    from: config.paths.assets('sw-material'),
+    to: config.paths.web('sw-material')
   }])
 ]
 
@@ -192,7 +192,7 @@ if (__PROD__) {
 
   webpackConfig.module.rules
     .filter(rule => rule.use && Array.isArray(rule.use) && rule.use.some(loader => loaderTouch(loader, /style-loader|css-loader/)))
-    .forEach(rule => ExtractTextPlugin.extract({use: rule.use}))
+    .forEach(rule => rule.use = ExtractTextPlugin.extract({use: rule.use}))
 
   webpackConfig.plugins.unshift(
     new ExtractTextPlugin({
