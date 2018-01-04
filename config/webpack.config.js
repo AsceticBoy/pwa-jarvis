@@ -5,6 +5,7 @@ var debug = require('debug')('app:webpack:config')
 var autoprefixer = require('autoprefixer')
 var pxToRem = require('postcss-pxtorem')
 var webpack = require('webpack')
+var webPush = require('web-push') // 这个包是用来模拟服务端生成public-key，并根据public-key来简化生成push-service的请求头部
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var CopyPlugin = require('copy-webpack-plugin')

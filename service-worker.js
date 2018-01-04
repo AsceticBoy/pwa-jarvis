@@ -1,5 +1,5 @@
-
 // service-worker.js record the liftcycle event focus
+'use strict'
 
 // global service-worker config
 let _CACHE_VERSION = 1
@@ -21,6 +21,48 @@ let _CACHE_INFO = {
 // compare file to file
 function checkFile(url, file) {
   
+}
+
+// send web-push info to client
+function sendPushInfo(event) {
+  console.info('Begin send Notification')
+  // ----- 必须 -----
+  // - title -> 标题
+  // ----- 非必须 -----
+  // - body[String] -> 消息主体
+  // - icon[String] -> 消息图标 URL
+  // - image[String] -> 在 body 里面附带显示的图片 URL，大小最好是 4:3 的比例
+  // - dir[String] -> 消息显示的方向 [auto] or [ltr] or [rtl]
+  // - renotify[Boolean] -> 当重复的 Not 触发时(依据tag)，标识是否禁用振动和声音,默认为 false
+  // - vibrate[Array] -> 用来设置振动的范围。格式为:[振动,暂停,振动,暂停…]。具体取值单位为 ms。比如：[100,200,100]。振动 100ms，静止 200ms，振动 100ms
+  // - tag[String]-> 用来标识每个 Not。方便后续对 Not 进行相关管理。
+  // - sound[String] -> 声音位置，MDN上并未标注
+  // - data[Any] -> 用来附带在 Not 里面的信息。我们一般可以在 notificationclick 事件中，对回调参数进行调用event.notification.data
+  // - silent[Boolean] -> 防止Not发出声音或者震动，默认是false
+  // - requireInteraction[Boolean] -> 展示Not一段时间后自己会消失，当然也可以靠这个留很长时间，让用户处理
+  // - badge[String]
+  // - actions[Array] -> UI上的效果自己试，主要是对notificationclick事件做针对性处理的
+  var title = 'It first web-push notification';
+  var options = {
+    body: 'We have received a push message.',
+    icon: '/sw-material/image/jarvis.png',
+    image: '/sw-material/image/jarvis.png',
+    dir: 'ltr',
+    slient: true,
+    renotify: true,
+    requireInteraction: false,
+    vibrate: [100,200,100],
+    sound: '/sw-material/audio/notify.mp3',
+    tag: 'simple-example',
+    badge: '/sw-material/image/jarvis.png',
+    actions: [{action: 'focus', title: "focus"}],
+    data: {
+      doge: {
+        wow: 'such amaze notification data'
+      }
+    }
+  }
+  return self.registration.showNotification(title, options)
 }
 
 // focus service-worker installing
@@ -136,6 +178,25 @@ self.addEventListener('activate', function (event) {
 })
 
 // 类似postMessage用来接收client的信息 --> 可用于client通知SW更新指定缓存
+// ------------------------- Push Flow ---------------------------
+// +-------+           +--------------+       +-------------+
+// |  UA   |           | Push Service |       | Application |
+// +-------+           +--------------+       |   Server    |
+//     |                      |               +-------------+
+//     |      Subscribe       |                      |
+//     |--------------------->|                      |
+//     |       Monitor        |                      |
+//     |<====================>|                      |
+//     |                      |                      |
+//     |          Distribute Push Resource           |
+//     |-------------------------------------------->|
+//     |                      |                      |
+//     :                      :                      :
+//     |                      |     Push Message     |
+//     |    Push Message      |<---------------------|
+//     |<---------------------|                      |
+//     |                      |                      |
+// ---------------------------------------------------------------
 self.addEventListener('message', function (event) {
   event.waitUntil(
     caches.open(_CACHE_INFO.prefetch.name)
@@ -169,8 +230,75 @@ self.addEventListener('message', function (event) {
   )
 })
 
-//  Sync请求监听，注意：只有到有网时才会自动发送，用于即时性比较高的情况
+// Sync请求监听，注意：只有到有网时才会自动发送，用于即时性比较高的情况
 self.addEventListener('sync', function (event) {
   // if (event.tag) fetch... 
 })
 
+// Push用于监听服务端的push事件，当收到后SW可以通过Notification推送给用户 ServiceWorkerRegistration.showNotification
+self.addEventListener('push', function (event) {
+  // event have push info
+  event.waitUntil(
+    sendPushInfo(event)
+  )
+})
+
+// notificationclick用于当用户点击notification时触发
+// Clients其实是当前浏览器打开窗口等一个集合，但是注意你只能操作和你域名一致的窗口
+// Clients.get(id): 用来获得某个具体的 client object
+// Clients.matchAll(options): 用来匹配当前 SW 控制的窗口。
+// 由于 SW 是根据路径来控制的，有可能只返回一部分，而不是同域。如果需要返回同域的窗口，则需要设置响应的
+// ** includeUncontrolled[Boolean]: 是否返回所有同域的 client。默认为 false。只返回当前 SW 控制的窗口
+// ** type: 设置返回 client 的类型。通常有：window, worker, sharedworker, 和 all。默认是 all
+// Clients.openWindow(url): 用来打开具体某个页面
+// Clients.claim(): 用来设置当前 SW 和同域的 cilent 进行关联
+
+// Client每个窗口对象
+// Client.type: 窗口类型可选window，worker，sharedworker等
+// Client.postMessage(msg[,transfer]): 用来和指定的窗口进行通信
+// Client.id[String]: 使用一个唯一的 id 表示当前窗口
+// Client.url: 窗口的 url
+
+// 针对type为window的窗口
+// WindowClient.focus(): 聚焦到当前SW控制的页面
+// WindowClient.navigate(url): 将当前页面到想到指定 url
+// WindowClient.focused[boolean]: 表示用户是否停留在当前 client
+self.addEventListener('notificationclick', function (event) {
+  console.log('On notification click: ', event.notification.tag)
+  // route you what to open
+  var route = self.location.href
+  // Android doesn’t close the notification when you click on it
+  // See: http://crbug.com/463146
+  event.notification.close()
+  // This looks to see if the current is already open and
+  // focuses if it is
+  event.waitUntil(
+    // 匹配特定条件的client
+    // case1: 没有窗口被打开，需要新打开一个窗口
+    // case2: 有窗口已经被打开了，只要聚焦下就行了
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    })
+    .then(function (arrayToMatchs) {
+      var currentClient = null
+      for (var i = 0; i < arrayToMatchs.length; i++) {
+        var clientUrl = new URL(arrayToMatchs[i].url)
+        if (clientUrl.href === route) {
+          currentClient = arrayToMatchs[i];
+          currentClient.focus()
+          return currentClient
+        }
+      }
+      if (!currentClient) {
+        clients.openWindow(route)
+      }
+    })
+    .then(function (clientMatched) {
+      // 已经有匹配到的client不需要再进行消息接收
+      if (!clientMatched) {
+        // TODO
+      }
+    })
+  )
+})
